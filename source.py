@@ -79,7 +79,7 @@
 # 
 #        Note that these will not all be performed in this exact order, and that some parts will supplement others. For example, I might use visualizations to help with the EDA. By using this approach the conclusions that can be made will be meaningful and impactful.
 
-# In[8]:
+# In[3]:
 
 
 # Start your code here
@@ -127,14 +127,14 @@ load_dotenv(override=True)
 pd.set_option('display.max_rows', 500)
 
 
-# In[9]:
+# In[4]:
 
 
 tax_df = pd.read_csv('Tax_Increment_Financing_Districts.csv')
 fire_incidents_df = pd.read_csv('Cincinnati_Fire_Incidents.csv')
 
 
-# In[10]:
+# In[5]:
 
 
 load_dotenv()
@@ -157,7 +157,7 @@ hydrant_df = pd.DataFrame.from_records(results)
 # 
 # The first part of this stage is that we will view the data and statistical summaries/information regarding it. 
 
-# In[11]:
+# In[6]:
 
 
 display(fire_incidents_df.describe())
@@ -165,7 +165,7 @@ display(tax_df.describe())
 display(hydrant_df.describe())
 
 
-# In[12]:
+# In[7]:
 
 
 display(fire_incidents_df.info())
@@ -181,7 +181,7 @@ display(hydrant_df.info())
 # ## Data Cleaning
 # As seen above in some of the visualizations and the data summaries, there are instances of missing variables and duplicates that need to be cleaned so the dataset can be used more accurately. There are also a lot of data columns that will not be used in this analysis, so cleaning these up can make it more clear cut. 
 
-# In[13]:
+# In[8]:
 
 
 valid_cfd_types = ['FIRE', 'OTHE']
@@ -193,7 +193,7 @@ fire_incidents_df = fire_incidents_df.drop(columns=columns_to_drop_fire)
 fire_incidents_df = fire_incidents_df.dropna()
 
 
-# In[14]:
+# In[9]:
 
 
 fire_incidents_df['ARRIVAL_TIME_PRIMARY_UNIT'] = pd.to_datetime(fire_incidents_df['ARRIVAL_TIME_PRIMARY_UNIT'])
@@ -202,20 +202,20 @@ fire_incidents_df['DISPATCH_TIME_PRIMARY_UNIT'] = pd.to_datetime(fire_incidents_
 fire_incidents_df['CREATE_TIME_INCIDENT'] = pd.to_datetime(fire_incidents_df['CREATE_TIME_INCIDENT'])
 
 
-# In[15]:
+# In[10]:
 
 
 fire_incidents_df['response_time'] = (fire_incidents_df['ARRIVAL_TIME_PRIMARY_UNIT'] - fire_incidents_df['DISPATCH_TIME_PRIMARY_UNIT']).dt.total_seconds()
 
 
-# In[16]:
+# In[11]:
 
 
 print(fire_incidents_df.info())
 print(fire_incidents_df.head())
 
 
-# In[17]:
+# In[12]:
 
 
 hydrant_df['latitude'] = pd.to_numeric(hydrant_df['latitude'], errors='coerce')
@@ -232,7 +232,7 @@ hydrant_df.dropna()
 hydrant_df = pd.merge(hydrant_df, active_hydrants_by_neighborhood, on='NEIGHBORHOOD', how='left')
 
 
-# In[18]:
+# In[13]:
 
 
 hydrant_df = hydrant_df[hydrant_df['NEIGHBORHOOD'].notnull()]
@@ -240,7 +240,7 @@ print(hydrant_df.info())
 print(hydrant_df.describe())
 
 
-# In[19]:
+# In[14]:
 
 
 tax_df['DOC_RECORD_DATE'] = pd.to_datetime(tax_df['DOC_RECORD_DATE'])
@@ -254,7 +254,7 @@ tax_df = tax_df.dropna()
 tax_df = tax_df.rename(columns={'TIF_DISTRICT_NAME': 'NEIGHBORHOOD'})
 
 
-# In[20]:
+# In[15]:
 
 
 print(tax_df.info())
@@ -269,7 +269,7 @@ print(tax_df.describe())
 # 
 # Below will be some visualizations I used to explore the data, and further down below them will have a write up of things that I observed.
 
-# In[21]:
+# In[16]:
 
 
 fire_incidents_df['Year'] = fire_incidents_df['CREATE_TIME_INCIDENT'].dt.year
@@ -285,7 +285,7 @@ plt.grid(True)
 plt.show()
 
 
-# In[22]:
+# In[17]:
 
 
 numerical_columns_tax = tax_df.select_dtypes(include=['float64', 'int64']).columns
@@ -298,7 +298,7 @@ plt.title('Correlation Heatmap of Tax Data')
 plt.show()
 
 
-# In[23]:
+# In[18]:
 
 
 neighborhood_incident_counts = fire_incidents_df.groupby(['NEIGHBORHOOD', 'CFD_INCIDENT_TYPE']).size().unstack()
@@ -312,7 +312,7 @@ plt.legend(title='Incident Type', bbox_to_anchor=(1, 1))
 plt.show()
 
 
-# In[24]:
+# In[19]:
 
 
 plt.figure(figsize=(10, 8))
@@ -323,7 +323,7 @@ plt.ylabel('Frequency')
 plt.show()
 
 
-# In[25]:
+# In[20]:
 
 
 neighborhoods = hydrant_df['NEIGHBORHOOD'].unique()
@@ -343,7 +343,7 @@ plt.tight_layout()
 plt.show()
 
 
-# In[26]:
+# In[21]:
 
 
 neighborhood_spending = tax_df.groupby('NEIGHBORHOOD')['POSTING_AMOUNT'].sum().reset_index()
@@ -405,13 +405,13 @@ plt.show()
 # 
 # In this step I will begin preparing the data and models to be split into sets so that they can be analyzed. 
 
-# In[27]:
+# In[22]:
 
 
 merged_hydrants_df = pd.merge(fire_incidents_df, hydrant_df, on='NEIGHBORHOOD', how='inner')
 
 
-# In[28]:
+# In[23]:
 
 
 X = merged_hydrants_df['active_hydrant_count']
@@ -420,7 +420,7 @@ Y = merged_hydrants_df['response_time']
 X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2, random_state=42)
 
 
-# In[29]:
+# In[24]:
 
 
 x = merged_hydrants_df[['active_hydrant_count']]
@@ -431,7 +431,7 @@ lin_hydrant_model = LinearRegression()
 lin_hydrant_model.fit(x, y)
 
 
-# In[33]:
+# In[ ]:
 
 
 poly_reg = make_pipeline(PolynomialFeatures(3), LinearRegression())
@@ -440,20 +440,15 @@ poly_reg_line_train = poly_reg.predict(X_train.values.reshape(-1, 1))
 poly_reg_line_test = poly_reg.predict(X_test.values.reshape(-1, 1))
 
 
-# In[35]:
+# In[ ]:
 
 
-# Plotting
 plt.figure(figsize=(12, 6))
 
-# Scatter plot for training data
 plt.scatter(X_train, Y_train, label='Training Data', color='blue')
 
-# Scatter plot for test data
 plt.scatter(X_test, Y_test, label='Test Data', color='orange')
 
-
-# Polynomial Regression lines
 plt.plot(X_train, poly_reg_line_train, label='Polynomial Regression (degree=3) (Training)', color='green')
 plt.plot(X_test, poly_reg_line_test, label='Polynomial Regression (degree=3) (Test)', linestyle='dashed', color='brown')
 
@@ -466,6 +461,7 @@ plt.show()
 
 # ## Summary
 # 
+# Ultimately I did not get the items to work on my end. I tried multiple sources and ways of doing this with the pipeline and regression models, but they all turned out like the one above. I am not sure why or how it would be a negative response time number, and no matter what I tried the pipeline and other forms would not work with my information. I do believe there would be a strong correlation between the response time and active hydrants as that would mean the area has more infracstructure set up. 
 
 # ## Resources and References
 # *What resources and references have you used for this project?*
@@ -474,7 +470,7 @@ plt.show()
 # All of the data sourced from this project was from [data.cincinnati-oh.gov](https://data.cincinnati-oh.gov/), a project where there is a lot of data about various elements of the greater Cincinnati area.
 # 
 
-# In[36]:
+# In[ ]:
 
 
 # ⚠️ Make sure you run this cell at the end of your notebook before every submission!
